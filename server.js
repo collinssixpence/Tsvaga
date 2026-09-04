@@ -35,7 +35,7 @@ const mockProducts = [
   { id: 12, name: 'Unisex Denim Jacket', price: 20.00, location: 'Eastgate Stall 8', stock: 'M, L, XL', category: 'clothes apparel jacket' }
 ];
 
-// Smart Search Logic: Ignores Shona/English filler words & matches any product fields
+// Smart Search Logic: Ignores English/Shona stop words and matches categories
 function searchProducts(query) {
   const text = query.toLowerCase().trim();
 
@@ -52,7 +52,7 @@ function searchProducts(query) {
   ];
   
   const words = text
-    .replace(/[^\w\s]/gi, '') // Remove punctuation
+    .replace(/[^\w\s]/gi, '')
     .split(/\s+/)
     .filter(word => !stopWords.includes(word) && word.length > 1);
 
@@ -84,13 +84,11 @@ app.post('/api/search', (req, res) => {
 
   const searchResult = searchProducts(userQuery);
 
-  // Return greeting response
   if (searchResult.type === 'greeting') {
     let helpMsg = `👋 *Hi there! Welcome to TsvagaBot AI.* \n\nYou can search across local merchants for:\n• *Chargers & Laptops*\n• *Solar Batteries & Panels*\n• *Groceries & Cooking Oil*\n• *Clothes & Shoes*\n\nTry searching something like: *"Ndinotsvaga solar battery near Mbare"*`;
     return res.json({ reply: helpMsg });
   }
 
-  // Return product search results matching PDF format
   const results = searchResult.items;
   if (results && results.length > 0) {
     let responseText = `Found ${results.length} seller(s):\n\n`;
@@ -158,7 +156,6 @@ app.post('/webhook', async (req, res) => {
         replyText = `Sorry, no products found matching "${text}". Try searching for "solar", "charger", "sugar", or "shoes".`;
       }
 
-      // Send reply via Meta Graph API
       try {
         const url = `https://graph.facebook.com/v20.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
         await axios.post(
@@ -187,7 +184,9 @@ app.post('/webhook', async (req, res) => {
   }
 });
 
-// Serve index.html at root route
+// ==========================================
+// 4. SERVE INDEX.HTML AT ROOT ROUTE (Fixes Render 404)
+// ==========================================
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -196,6 +195,5 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`=================================`);
   console.log(`TsvagaBot MVP Server running on port ${PORT}`);
-  console.log(`Open http://localhost:${PORT} in your browser`);
   console.log(`=================================`);
 });

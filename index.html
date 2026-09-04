@@ -8,38 +8,31 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background: #d1d7db; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
     
-    /* Phone Shell Styling */
     .phone-container { width: 380px; height: 680px; background: #efeae2; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 12px 28px rgba(0,0,0,0.25); border: 4px solid #111; position: relative; }
     
-    /* WhatsApp Header */
     .chat-header { background: #075e54; color: #fff; padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
     .avatar { width: 38px; height: 38px; background: #128c7e; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 18px; color: white; border: 1px solid #25d366; }
     .header-info { display: flex; flex-direction: column; }
     .header-title { font-weight: 600; font-size: 15px; }
     .header-status { font-size: 11px; opacity: 0.85; }
 
-    /* Chat Messages Box */
     .chat-box { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background-image: radial-gradient(#00000010 1px, transparent 0); background-size: 12px 12px; }
     
-    /* WhatsApp Message Bubbles */
     .msg { max-width: 85%; padding: 8px 12px; border-radius: 7.5px; font-size: 13.5px; line-height: 1.4; position: relative; word-wrap: break-word; }
     .user { background: #dcf8c6; align-self: flex-end; border-top-right-radius: 0; color: #111; }
     .bot { background: #ffffff; align-self: flex-start; border-top-left-radius: 0; color: #111; box-shadow: 0 1px 1px rgba(0,0,0,0.13); }
     .time { font-size: 10px; color: #888; text-align: right; margin-top: 4px; display: block; }
 
-    /* Interactive Buttons inside Chat */
     .btn-group { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
     .chat-btn { background: #f0f2f5; border: 1px solid #00a884; color: #008069; padding: 8px 12px; border-radius: 18px; font-size: 12.5px; font-weight: 600; cursor: pointer; text-align: center; transition: 0.2s; }
     .chat-btn:hover { background: #00a884; color: #fff; }
     .chat-btn.primary { background: #008069; color: #fff; border: none; }
 
-    /* Form Overlay for Seller Setup */
     .form-overlay { display: none; position: absolute; bottom: 0; left: 0; right: 0; background: #fff; border-top-left-radius: 16px; border-top-right-radius: 16px; padding: 16px; box-shadow: 0 -4px 15px rgba(0,0,0,0.2); animation: slideUp 0.3s ease-out; z-index: 10; }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .form-overlay h4 { font-size: 14px; margin-bottom: 10px; color: #075e54; border-bottom: 1px solid #eee; padding-bottom: 6px; }
     .form-overlay input { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; }
 
-    /* Chat Input Area */
     .input-box { display: flex; padding: 8px 10px; background: #f0f2f5; align-items: center; gap: 6px; }
     .input-box input { flex: 1; padding: 9px 12px; border: none; border-radius: 20px; outline: none; font-size: 13px; background: #fff; }
     .input-box button { background: #008069; color: #fff; border: none; padding: 8px 12px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -49,7 +42,6 @@
 <body>
 
   <div class="phone-container">
-    <!-- Header -->
     <div class="chat-header">
       <div class="avatar">T</div>
       <div class="header-info">
@@ -58,9 +50,7 @@
       </div>
     </div>
 
-    <!-- Chat View -->
     <div class="chat-box" id="chatBox">
-      <!-- Welcome Message -->
       <div class="msg bot">
         👋 <b>Welcome to TsvagaBot AI!</b><br><br>
         I connect buyers looking for products with local merchants & service providers.<br><br>
@@ -73,7 +63,6 @@
       </div>
     </div>
 
-    <!-- Seller WhatsApp Form Overlay -->
     <div class="form-overlay" id="sellerForm">
       <h4>📋 WhatsApp Native Form Overlay</h4>
       <input type="text" id="bizName" placeholder="Business Name (e.g. Tinashe Electronics)">
@@ -83,7 +72,6 @@
       <button class="chat-btn primary" style="width: 100%;" onclick="submitSellerForm()">Verify & Save Merchant</button>
     </div>
 
-    <!-- Input Footer -->
     <div class="input-box">
       <input type="text" id="userInput" placeholder="Type or search..." onkeydown="if(event.key === 'Enter') sendMessage()">
       <button class="mic-btn" onclick="simulateVoiceNote()" title="Simulate Voice Note (Merchant)">🎤</button>
@@ -117,7 +105,6 @@
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // Role Selection
     function selectRole(role) {
       if (role === 'Buyer') {
         appendUserMsg("I want to Buy");
@@ -184,7 +171,6 @@
       }, 600);
     }
 
-    // Voice Note Simulation (Screen 4 from PDF)
     function simulateVoiceNote() {
       appendUserMsg(`🎤 <i>[Voice Note 0:06]</i><br>"I have 5 solar batteries 100Ah for $120 each at Mbare sector B"`);
       setTimeout(() => {
@@ -208,7 +194,6 @@
       }, 500);
     }
 
-    // EcoCash Monetization (Screen 5 from PDF)
     function triggerEcoCashPrompt() {
       appendUserMsg("Boost to Top Search Placement");
       setTimeout(() => {
@@ -234,7 +219,6 @@
       }, 1000);
     }
 
-    // Send Input Message to Server
     async function sendMessage() {
       const input = document.getElementById('userInput');
       const text = input.value.trim();
