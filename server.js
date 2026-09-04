@@ -11,14 +11,14 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // ==========================================
-// LOCAL MERCHANT DATABASE
+// IN-MEMORY LOCAL MERCHANT DATABASE
 // ==========================================
 const mockProducts = [
   // Electronics & Accessories
-  { id: 1, name: '20W Fast iPhone Charger', price: 10.00, location: 'Stall 14, Eastgate Market', stock: 'In Stock Today', category: 'charger electronics phone' },
-  { id: 2, name: 'Apple Original Charging Block', price: 15.00, location: 'Shop 5, Gulf Complex', stock: 'In Stock', category: 'charger electronics phone' },
-  { id: 3, name: 'Bluetooth Earbuds Pro', price: 25.00, location: 'Harare CBD Mall', stock: '8 left', category: 'audio electronics' },
-  { id: 4, name: 'HP Laptop i5 8GB RAM', price: 280.00, location: 'Eastgate Mall Shop 12', stock: '3 available', category: 'computer electronics laptop' },
+  { id: 1, name: '20W Fast iPhone Charger', price: 10.00, location: 'Stall 14, Eastgate Market', stock: 'In Stock Today', category: 'charger electronics phone iphone' },
+  { id: 2, name: 'Apple Original Charging Block', price: 15.00, location: 'Shop 5, Gulf Complex', stock: 'In Stock', category: 'charger electronics phone apple' },
+  { id: 3, name: 'Bluetooth Earbuds Pro', price: 25.00, location: 'Harare CBD Mall', stock: '8 left', category: 'audio electronics bluetooth' },
+  { id: 4, name: 'HP Laptop i5 8GB RAM', price: 280.00, location: 'Eastgate Mall Shop 12', stock: '3 available', category: 'computer electronics laptop hp' },
 
   // Solar & Hardware
   { id: 5, name: '100Ah Gel Solar Battery', price: 120.00, location: 'Mbare Musika, Sector B', stock: '5 left', category: 'solar hardware battery' },
@@ -35,7 +35,7 @@ const mockProducts = [
   { id: 12, name: 'Unisex Denim Jacket', price: 20.00, location: 'Eastgate Stall 8', stock: 'M, L, XL', category: 'clothes apparel jacket' }
 ];
 
-// Helper: Local DB Search
+// Helper: Local DB Search (Strict Term Matching)
 function searchLocalProducts(query) {
   const text = query.toLowerCase().trim();
 
@@ -51,12 +51,10 @@ function searchLocalProducts(query) {
 
   if (words.length === 0) return [];
 
+  // Strict match: ALL search keywords must be present in the item data
   return mockProducts.filter(product => {
-    return words.some(word => 
-      product.name.toLowerCase().includes(word) || 
-      product.category.toLowerCase().includes(word) ||
-      product.location.toLowerCase().includes(word)
-    );
+    const itemData = `${product.name} ${product.category} ${product.location}`.toLowerCase();
+    return words.every(word => itemData.includes(word));
   });
 }
 
@@ -87,7 +85,7 @@ async function searchGoogle(query) {
   return null;
 }
 
-// Main Search Manager
+// Core Search Logic Engine
 async function processSearch(userQuery) {
   const text = userQuery.toLowerCase().trim();
 
@@ -97,7 +95,7 @@ async function processSearch(userQuery) {
     return `👋 *Hi there! Welcome to TsvagaBot AI.* \n\nYou can search for local stock or general interests:\n• *Local Products:* Chargers, Solar, Groceries\n• *Web Searches:* Any general product or topic!`;
   }
 
-  // 1. Try local product database first
+  // 1. Check local merchant inventory first
   const localResults = searchLocalProducts(userQuery);
   if (localResults.length > 0) {
     let responseText = `Found ${localResults.length} local seller(s):\n\n`;
@@ -107,17 +105,17 @@ async function processSearch(userQuery) {
     return responseText.trim();
   }
 
-  // 2. Fallback to Google Search if local database has no matches
+  // 2. Fallback to Google Search if local inventory yields no match
   const googleResults = await searchGoogle(userQuery);
   if (googleResults) {
     return googleResults;
   }
 
-  return `Sorry, no local listings or web search results found for "${userQuery}". Try refining your search query!`;
+  return `Sorry, no local listings or web search results found for "${userQuery}". Try refining your query!`;
 }
 
 // ==========================================
-// WEB SIMULATOR ENDPOINT
+// 1. WEB SIMULATOR ENDPOINTS
 // ==========================================
 app.post('/api/search', async (req, res) => {
   const userQuery = req.body.query;
@@ -129,8 +127,34 @@ app.post('/api/search', async (req, res) => {
   return res.json({ reply });
 });
 
+// Dynamic merchant listing addition
+app.post('/api/add-product', (req, res) => {
+  const { name, price, location, stock, category } = req.body;
+
+  if (!name || !price) {
+    return res.status(400).json({ error: 'Name and price are required.' });
+  }
+
+  const newProduct = {
+    id: mockProducts.length + 1,
+    name,
+    price: parseFloat(price),
+    location: location || 'Harare CBD',
+    stock: stock || 'In Stock',
+    category: category || name.toLowerCase()
+  };
+
+  mockProducts.push(newProduct);
+
+  return res.json({ 
+    success: true, 
+    message: `🎉 *Listing Published!* "${newProduct.name}" is now live in search.`,
+    product: newProduct
+  });
+});
+
 // ==========================================
-// WHATSAPP WEBHOOK VERIFICATION & INBOUND
+// 2. WHATSAPP WEBHOOK VERIFICATION & RECEIVER
 // ==========================================
 app.get('/webhook', (req, res) => {
   const verifyToken = process.env.VERIFY_TOKEN;
@@ -181,11 +205,14 @@ app.post('/webhook', async (req, res) => {
   }
 });
 
-// Serve Root
+// Serve frontend UI
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Start Application Server
 app.listen(PORT, () => {
-  console.log(`TsvagaBot Server active on port ${PORT}`);
+  console.log(`=================================`);
+  console.log(`TsvagaBot MVP Server running on port ${PORT}`);
+  console.log(`=================================`);
 });
