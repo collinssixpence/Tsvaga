@@ -9,47 +9,61 @@
 </head>
 <body class="bg-gray-100 h-screen flex items-center justify-center p-4">
 
-  <!-- WhatsApp Phone Container -->
-  <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-300 flex flex-col h-[650px]">
+  <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-300 flex flex-col h-[650px] relative">
     
     <!-- Header -->
     <div class="bg-[#075e54] text-white p-3 flex items-center justify-between">
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-lg">
+        <div class="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-lg" id="avatar-initial">
           T
         </div>
         <div>
-          <h2 class="font-bold text-sm leading-tight">TsvagaBot AI</h2>
-          <p class="text-xs text-emerald-200">Online • Meta Cloud API</p>
+          <h2 class="font-bold text-sm leading-tight" id="header-user-title">TsvagaBot AI</h2>
+          <p class="text-xs text-emerald-200" id="header-user-subtitle">Online • Meta Cloud API</p>
         </div>
       </div>
-      <div class="flex space-x-3 text-sm">
-        <button onclick="simulateVoiceNote()" title="Simulate Merchant Voice Note" class="hover:opacity-80">
-          <i class="fas font-bold fa-microphone bg-emerald-700 p-2 rounded-full"></i>
+      <div class="flex space-x-2 text-sm">
+        <button id="mic-btn" onclick="simulateVoiceNote()" title="Add Listing" class="hidden hover:opacity-80">
+          <i class="fas fa-microphone bg-emerald-700 p-2 rounded-full"></i>
+        </button>
+        <button id="logout-btn" onclick="logoutUser()" title="Logout" class="hidden hover:opacity-80">
+          <i class="fas fa-sign-out-alt bg-red-600 p-2 rounded-full text-xs"></i>
         </button>
       </div>
     </div>
 
-    <!-- Quick Location Bar -->
+    <!-- Onboarding Modal -->
+    <div id="registration-overlay" class="absolute inset-0 bg-white z-50 p-6 flex flex-col justify-center">
+      <h2 class="text-xl font-bold text-[#075e54] mb-2">Welcome to TsvagaBot</h2>
+      <p class="text-xs text-gray-600 mb-4">Please register to get started</p>
+
+      <label class="text-xs font-semibold text-gray-700 mb-1">Your Name</label>
+      <input type="text" id="reg-name" placeholder="e.g. Collins" class="border border-gray-300 rounded p-2 text-sm mb-3 focus:outline-none focus:border-[#075e54]">
+
+      <label class="text-xs font-semibold text-gray-700 mb-1">Role</label>
+      <select id="reg-role" class="border border-gray-300 rounded p-2 text-sm mb-3 focus:outline-none focus:border-[#075e54]">
+        <option value="Buyer">Buyer (Search for products)</option>
+        <option value="Seller">Seller / Merchant (List products)</option>
+      </select>
+
+      <label class="text-xs font-semibold text-gray-700 mb-1">Location</label>
+      <input type="text" id="reg-location" placeholder="e.g. Harare CBD, Mbare" class="border border-gray-300 rounded p-2 text-sm mb-4 focus:outline-none focus:border-[#075e54]">
+
+      <button onclick="registerUser()" class="bg-[#075e54] text-white py-2 rounded font-bold text-sm hover:bg-[#128c7e]">
+        Start Using Bot
+      </button>
+    </div>
+
+    <!-- Location Bar -->
     <div class="bg-[#128c7e] text-white text-xs px-3 py-1.5 flex justify-between items-center">
-      <span>📍 Location: <b>Harare CBD</b></span>
-      <button onclick="appendBotMsg('📍 Location updated to Harare CBD/Eastgate.')" class="underline opacity-80 hover:opacity-100">Change</button>
+      <span>📍 Location: <b id="user-location-label">Not set</b></span>
+      <button onclick="changeLocation()" class="underline opacity-80 hover:opacity-100">Change</button>
     </div>
 
-    <!-- Chat Messages Window -->
-    <div id="chat-window" class="flex-1 bg-[#efeae2] p-4 overflow-y-auto space-y-3">
-      
-      <!-- Welcome Message -->
-      <div class="flex justify-start">
-        <div class="bg-white p-3 rounded-lg max-w-[85%] text-xs shadow-sm text-gray-800">
-          👋 <b>Welcome to TsvagaBot AI!</b><br><br>
-          Search for local product stock or ask any general inquiry.
-        </div>
-      </div>
+    <!-- Chat Screen -->
+    <div id="chat-window" class="flex-1 bg-[#efeae2] p-4 overflow-y-auto space-y-3"></div>
 
-    </div>
-
-    <!-- Input Footer -->
+    <!-- Input Box -->
     <div class="bg-gray-100 p-2 border-t border-gray-200 flex items-center space-x-2">
       <input 
         type="text" 
@@ -58,10 +72,7 @@
         onkeypress="if(event.key === 'Enter') sendSearch()"
         class="flex-1 bg-white border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#075e54]"
       >
-      <button 
-        onclick="sendSearch()" 
-        class="bg-[#075e54] text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-[#128c7e] transition-colors"
-      >
+      <button onclick="sendSearch()" class="bg-[#075e54] text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-[#128c7e]">
         <i class="fas fa-paper-plane text-xs"></i>
       </button>
     </div>
@@ -69,36 +80,86 @@
   </div>
 
   <script>
-    // Append user message to chat UI
+    let currentUser = null;
+
+    // Load Session
+    window.onload = function() {
+      const savedUser = localStorage.getItem('tsvaga_user');
+      if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        setupSessionUI();
+      }
+    };
+
+    function registerUser() {
+      const name = document.getElementById('reg-name').value.trim();
+      const role = document.getElementById('reg-role').value;
+      const location = document.getElementById('reg-location').value.trim();
+
+      if (!name || !location) {
+        alert("Please provide both name and location.");
+        return;
+      }
+
+      currentUser = { name, role, location };
+      localStorage.setItem('tsvaga_user', JSON.stringify(currentUser));
+      setupSessionUI();
+    }
+
+    function setupSessionUI() {
+      document.getElementById('registration-overlay').classList.add('hidden');
+      document.getElementById('logout-btn').classList.remove('hidden');
+      
+      document.getElementById('header-user-title').innerText = currentUser.name;
+      document.getElementById('header-user-subtitle').innerText = `${currentUser.role} • ${currentUser.location}`;
+      document.getElementById('avatar-initial').innerText = currentUser.name.charAt(0).toUpperCase();
+      document.getElementById('user-location-label').innerText = currentUser.location;
+
+      if (currentUser.role === 'Seller') {
+        document.getElementById('mic-btn').classList.remove('hidden');
+      } else {
+        document.getElementById('mic-btn').classList.add('hidden');
+      }
+
+      appendBotMsg(`👋 Welcome back, *${currentUser.name}*! You are logged in as a *${currentUser.role}* in *${currentUser.location}*.`);
+    }
+
+    function logoutUser() {
+      localStorage.removeItem('tsvaga_user');
+      currentUser = null;
+      document.getElementById('chat-window').innerHTML = '';
+      document.getElementById('registration-overlay').classList.remove('hidden');
+      document.getElementById('logout-btn').classList.add('hidden');
+      document.getElementById('mic-btn').classList.add('hidden');
+      document.getElementById('header-user-title').innerText = "TsvagaBot AI";
+      document.getElementById('header-user-subtitle').innerText = "Online • Meta Cloud API";
+      document.getElementById('avatar-initial').innerText = "T";
+    }
+
+    function changeLocation() {
+      const newLoc = prompt("Enter new location:", currentUser ? currentUser.location : "Harare CBD");
+      if (newLoc && currentUser) {
+        currentUser.location = newLoc;
+        localStorage.setItem('tsvaga_user', JSON.stringify(currentUser));
+        document.getElementById('user-location-label').innerText = newLoc;
+        document.getElementById('header-user-subtitle').innerText = `${currentUser.role} • ${newLoc}`;
+        appendBotMsg(`📍 Location updated to *${newLoc}*.`);
+      }
+    }
+
     function appendUserMsg(text) {
       const chat = document.getElementById('chat-window');
-      chat.innerHTML += `
-        <div class="flex justify-end">
-          <div class="bg-[#dcf8c6] p-3 rounded-lg max-w-[85%] text-xs shadow-sm text-gray-800">
-            ${text}
-          </div>
-        </div>
-      `;
+      chat.innerHTML += `<div class="flex justify-end"><div class="bg-[#dcf8c6] p-3 rounded-lg max-w-[85%] text-xs shadow-sm text-gray-800">${text}</div></div>`;
       chat.scrollTop = chat.scrollHeight;
     }
 
-    // Append bot message to chat UI
     function appendBotMsg(text) {
       const chat = document.getElementById('chat-window');
-      // Format line breaks and bold syntax
       const formattedText = text.replace(/\n/g, '<br>').replace(/\*(.*?)\*/g, '<b>$1</b>');
-      
-      chat.innerHTML += `
-        <div class="flex justify-start">
-          <div class="bg-white p-3 rounded-lg max-w-[85%] text-xs shadow-sm text-gray-800">
-            ${formattedText}
-          </div>
-        </div>
-      `;
+      chat.innerHTML += `<div class="flex justify-start"><div class="bg-white p-3 rounded-lg max-w-[85%] text-xs shadow-sm text-gray-800">${formattedText}</div></div>`;
       chat.scrollTop = chat.scrollHeight;
     }
 
-    // Handle input field search
     async function sendSearch() {
       const inputEl = document.getElementById('user-input');
       const query = inputEl.value.trim();
@@ -111,27 +172,26 @@
         const res = await fetch('/api/search', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query })
+          body: JSON.stringify({ 
+            query, 
+            userLocation: currentUser ? currentUser.location : 'Harare CBD',
+            userName: currentUser ? currentUser.name : 'User'
+          })
         });
 
         const data = await res.json();
         appendBotMsg(data.reply);
       } catch (err) {
-        appendBotMsg("❌ Could not reach TsvagaBot server. Please check your connection.");
+        appendBotMsg("❌ Server connection error.");
       }
     }
 
-    // Dynamic Voice Note / Merchant Add Product
     async function simulateVoiceNote() {
-      const userText = prompt(
-        "Simulate Voice Note / Quick Merchant Listing:", 
-        "5 Samsung S20 phones for $220 each at Gulf Complex"
-      );
-      if (!userText || !userText.trim()) return;
+      const userText = prompt("Add Listing (Voice Note / Quick Text):", "5 Samsung S20 phones for $220 each");
+      if (!userText) return;
 
       appendUserMsg(`🎤 <i>[Voice Note]</i><br>"${userText}"`);
 
-      // Extract price from string if present
       const priceMatch = userText.match(/\$(\d+)/) || userText.match(/(\d+)\s*(usd|dollars)/i);
       const price = priceMatch ? priceMatch[1] : '100';
 
@@ -142,7 +202,7 @@
           body: JSON.stringify({
             name: userText.split('for')[0].trim(),
             price: price,
-            location: 'Harare CBD',
+            location: currentUser ? currentUser.location : 'Harare CBD',
             stock: 'In Stock',
             category: userText.toLowerCase()
           })
@@ -150,10 +210,10 @@
 
         const data = await res.json();
         if (data.success) {
-          appendBotMsg(`🤖 *AI Parsed & Added to Live Database:*\n\n📦 *Listing:* ${data.product.name}\n💵 *Price:* $${data.product.price.toFixed(2)} USD\n📍 *Location:* ${data.product.location}\n\n✅ ${data.message}`);
+          appendBotMsg(`🤖 *Listing Added:* ${data.product.name} ($${data.product.price}) in ${data.product.location}`);
         }
       } catch (err) {
-        appendBotMsg("❌ Failed to register merchant listing.");
+        appendBotMsg("❌ Failed to register listing.");
       }
     }
   </script>
