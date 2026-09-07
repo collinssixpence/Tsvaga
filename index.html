@@ -4,239 +4,156 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TsvagaBot AI Simulator</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background: #d1d7db; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
-    
-    .phone-container { width: 380px; height: 680px; background: #efeae2; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 12px 28px rgba(0,0,0,0.25); border: 4px solid #111; position: relative; }
-    
-    .chat-header { background: #075e54; color: #fff; padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
-    .avatar { width: 38px; height: 38px; background: #128c7e; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 18px; color: white; border: 1px solid #25d366; }
-    .header-info { display: flex; flex-direction: column; }
-    .header-title { font-weight: 600; font-size: 15px; }
-    .header-status { font-size: 11px; opacity: 0.85; }
-
-    .chat-box { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background-image: radial-gradient(#00000010 1px, transparent 0); background-size: 12px 12px; }
-    
-    .msg { max-width: 85%; padding: 8px 12px; border-radius: 7.5px; font-size: 13.5px; line-height: 1.4; position: relative; word-wrap: break-word; }
-    .user { background: #dcf8c6; align-self: flex-end; border-top-right-radius: 0; color: #111; }
-    .bot { background: #ffffff; align-self: flex-start; border-top-left-radius: 0; color: #111; box-shadow: 0 1px 1px rgba(0,0,0,0.13); }
-    .time { font-size: 10px; color: #888; text-align: right; margin-top: 4px; display: block; }
-
-    .btn-group { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
-    .chat-btn { background: #f0f2f5; border: 1px solid #00a884; color: #008069; padding: 8px 12px; border-radius: 18px; font-size: 12.5px; font-weight: 600; cursor: pointer; text-align: center; transition: 0.2s; }
-    .chat-btn:hover { background: #00a884; color: #fff; }
-    .chat-btn.primary { background: #008069; color: #fff; border: none; }
-
-    .form-overlay { display: none; position: absolute; bottom: 0; left: 0; right: 0; background: #fff; border-top-left-radius: 16px; border-top-right-radius: 16px; padding: 16px; box-shadow: 0 -4px 15px rgba(0,0,0,0.2); animation: slideUp 0.3s ease-out; z-index: 10; }
-    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-    .form-overlay h4 { font-size: 14px; margin-bottom: 10px; color: #075e54; border-bottom: 1px solid #eee; padding-bottom: 6px; }
-    .form-overlay input { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; }
-
-    .input-box { display: flex; padding: 8px 10px; background: #f0f2f5; align-items: center; gap: 6px; }
-    .input-box input { flex: 1; padding: 9px 12px; border: none; border-radius: 20px; outline: none; font-size: 13px; background: #fff; }
-    .input-box button { background: #008069; color: #fff; border: none; padding: 8px 12px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .mic-btn { background: #02a698; }
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
+<body class="bg-gray-100 h-screen flex items-center justify-center p-4">
 
-  <div class="phone-container">
-    <div class="chat-header">
-      <div class="avatar">T</div>
-      <div class="header-info">
-        <div class="header-title">TsvagaBot AI</div>
-        <div class="header-status">Online • Meta Cloud API</div>
-      </div>
-    </div>
-
-    <div class="chat-box" id="chatBox">
-      <div class="msg bot">
-        👋 <b>Welcome to TsvagaBot AI!</b><br><br>
-        I connect buyers looking for products with local merchants & service providers.<br><br>
-        <b>Select how you want to use TsvagaBot today:</b>
-        <div class="btn-group">
-          <button class="chat-btn primary" onclick="selectRole('Buyer')">I want to Buy</button>
-          <button class="chat-btn" onclick="selectRole('Seller')">I'm a Seller/Service Provider</button>
+  <!-- WhatsApp Phone Container -->
+  <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-300 flex flex-col h-[650px]">
+    
+    <!-- Header -->
+    <div class="bg-[#075e54] text-white p-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-lg">
+          T
         </div>
-        <span class="time">Just now</span>
+        <div>
+          <h2 class="font-bold text-sm leading-tight">TsvagaBot AI</h2>
+          <p class="text-xs text-emerald-200">Online • Meta Cloud API</p>
+        </div>
+      </div>
+      <div class="flex space-x-3 text-sm">
+        <button onclick="simulateVoiceNote()" title="Simulate Merchant Voice Note" class="hover:opacity-80">
+          <i class="fas font-bold fa-microphone bg-emerald-700 p-2 rounded-full"></i>
+        </button>
       </div>
     </div>
 
-    <div class="form-overlay" id="sellerForm">
-      <h4>📋 WhatsApp Native Form Overlay</h4>
-      <input type="text" id="bizName" placeholder="Business Name (e.g. Tinashe Electronics)">
-      <input type="text" id="bizType" placeholder="Type (e.g. Products & Solar)">
-      <input type="text" id="bizLocation" placeholder="Landmark (e.g. Eastgate Stall 14)">
-      <input type="text" id="bizPhone" placeholder="Phone Number (e.g. 0771234567)">
-      <button class="chat-btn primary" style="width: 100%;" onclick="submitSellerForm()">Verify & Save Merchant</button>
+    <!-- Quick Location Bar -->
+    <div class="bg-[#128c7e] text-white text-xs px-3 py-1.5 flex justify-between items-center">
+      <span>📍 Location: <b>Harare CBD</b></span>
+      <button onclick="appendBotMsg('📍 Location updated to Harare CBD/Eastgate.')" class="underline opacity-80 hover:opacity-100">Change</button>
     </div>
 
-    <div class="input-box">
-      <input type="text" id="userInput" placeholder="Type or search..." onkeydown="if(event.key === 'Enter') sendMessage()">
-      <button class="mic-btn" onclick="simulateVoiceNote()" title="Simulate Voice Note (Merchant)">🎤</button>
-      <button onclick="sendMessage()">➤</button>
+    <!-- Chat Messages Window -->
+    <div id="chat-window" class="flex-1 bg-[#efeae2] p-4 overflow-y-auto space-y-3">
+      
+      <!-- Welcome Message -->
+      <div class="flex justify-start">
+        <div class="bg-white p-3 rounded-lg max-w-[85%] text-xs shadow-sm text-gray-800">
+          👋 <b>Welcome to TsvagaBot AI!</b><br><br>
+          Search for local product stock or ask any general inquiry.
+        </div>
+      </div>
+
     </div>
+
+    <!-- Input Footer -->
+    <div class="bg-gray-100 p-2 border-t border-gray-200 flex items-center space-x-2">
+      <input 
+        type="text" 
+        id="user-input" 
+        placeholder="Type or search..." 
+        onkeypress="if(event.key === 'Enter') sendSearch()"
+        class="flex-1 bg-white border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#075e54]"
+      >
+      <button 
+        onclick="sendSearch()" 
+        class="bg-[#075e54] text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-[#128c7e] transition-colors"
+      >
+        <i class="fas fa-paper-plane text-xs"></i>
+      </button>
+    </div>
+
   </div>
 
   <script>
-    function getCurrentTime() {
-      const d = new Date();
-      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
+    // Append user message to chat UI
     function appendUserMsg(text) {
-      const chatBox = document.getElementById('chatBox');
-      chatBox.innerHTML += `
-        <div class="msg user">
-          ${text}
-          <span class="time">${getCurrentTime()}</span>
-        </div>`;
-      chatBox.scrollTop = chatBox.scrollHeight;
+      const chat = document.getElementById('chat-window');
+      chat.innerHTML += `
+        <div class="flex justify-end">
+          <div class="bg-[#dcf8c6] p-3 rounded-lg max-w-[85%] text-xs shadow-sm text-gray-800">
+            ${text}
+          </div>
+        </div>
+      `;
+      chat.scrollTop = chat.scrollHeight;
     }
 
-    function appendBotMsg(htmlContent) {
-      const chatBox = document.getElementById('chatBox');
-      chatBox.innerHTML += `
-        <div class="msg bot">
-          ${htmlContent}
-          <span class="time">${getCurrentTime()}</span>
-        </div>`;
-      chatBox.scrollTop = chatBox.scrollHeight;
+    // Append bot message to chat UI
+    function appendBotMsg(text) {
+      const chat = document.getElementById('chat-window');
+      // Format line breaks and bold syntax
+      const formattedText = text.replace(/\n/g, '<br>').replace(/\*(.*?)\*/g, '<b>$1</b>');
+      
+      chat.innerHTML += `
+        <div class="flex justify-start">
+          <div class="bg-white p-3 rounded-lg max-w-[85%] text-xs shadow-sm text-gray-800">
+            ${formattedText}
+          </div>
+        </div>
+      `;
+      chat.scrollTop = chat.scrollHeight;
     }
 
-    function selectRole(role) {
-      if (role === 'Buyer') {
-        appendUserMsg("I want to Buy");
-        setTimeout(() => {
-          appendBotMsg(`
-            <b>TsvagaBot (Buyer Mode)</b><br><br>
-            Great! Account created as a Buyer.<br>
-            Where are you usually based to show stock near you?
-            <div class="btn-group">
-              <button class="chat-btn" onclick="selectLocation('Harare CBD/Eastgate/Gulf')">Harare CBD/Eastgate/Gulf</button>
-              <button class="chat-btn" onclick="selectLocation('Mbare Musika/Magaba')">Mbare Musika/Magaba</button>
-              <button class="chat-btn" onclick="selectLocation('Select Other Location')">Select Other Location</button>
-            </div>
-            <br><i>Or type what you are searching for right now!</i>
-          `);
-        }, 500);
-      } else {
-        appendUserMsg("I'm a Seller/Service Provider");
-        setTimeout(() => {
-          appendBotMsg(`
-            <b>TsvagaBot (Seller Mode)</b><br><br>
-            Welcome Partner!<br>
-            Tap below to fill your business details:
-            <div class="btn-group">
-              <button class="chat-btn primary" onclick="openSellerForm()">Fill Business Details</button>
-            </div>
-          `);
-        }, 500);
+    // Handle input field search
+    async function sendSearch() {
+      const inputEl = document.getElementById('user-input');
+      const query = inputEl.value.trim();
+      if (!query) return;
+
+      appendUserMsg(query);
+      inputEl.value = '';
+
+      try {
+        const res = await fetch('/api/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query })
+        });
+
+        const data = await res.json();
+        appendBotMsg(data.reply);
+      } catch (err) {
+        appendBotMsg("❌ Could not reach TsvagaBot server. Please check your connection.");
       }
     }
 
-    function selectLocation(loc) {
-      appendUserMsg(`[Selected: ${loc}]`);
-      setTimeout(() => {
-        appendBotMsg(`📍 Location set to <b>${loc}</b>.<br><br>Type what you are searching for (e.g. <i>"Ndinotsvaga fast iPhone charger near Eastgate"</i>).`);
-      }, 500);
-    }
+    // Dynamic Voice Note / Merchant Add Product
+    async function simulateVoiceNote() {
+      const userText = prompt(
+        "Simulate Voice Note / Quick Merchant Listing:", 
+        "5 Samsung S20 phones for $220 each at Gulf Complex"
+      );
+      if (!userText || !userText.trim()) return;
 
-    function openSellerForm() {
-      document.getElementById('sellerForm').style.display = 'block';
-    }
+      appendUserMsg(`🎤 <i>[Voice Note]</i><br>"${userText}"`);
 
-    function submitSellerForm() {
-      const name = document.getElementById('bizName').value || 'Tinashe Electronics';
-      const type = document.getElementById('bizType').value || 'Products & Solar';
-      const loc = document.getElementById('bizLocation').value || 'Eastgate Stall 14';
-      const phone = document.getElementById('bizPhone').value || '0771234567';
-
-      document.getElementById('sellerForm').style.display = 'none';
-
-      appendUserMsg(`Submitted Details:\n${name} | ${type} | ${loc}`);
-      setTimeout(() => {
-        appendBotMsg(`
-          ✅ <b>Merchant Profile Verified!</b><br><br>
-          <b>Business:</b> ${name}<br>
-          <b>Type:</b> ${type}<br>
-          <b>Landmark:</b> ${loc}<br>
-          <b>Phone:</b> ${phone}<br><br>
-          🚀 <b>Boost your listings:</b>
-          <div class="btn-group">
-            <button class="chat-btn primary" onclick="triggerEcoCashPrompt()">Boost Search Placement ($2 USD/mo)</button>
-          </div>
-        `);
-      }, 600);
-    }
-
-    function simulateVoiceNote() {
-      appendUserMsg(`🎤 <i>[Voice Note 0:06]</i><br>"I have 5 solar batteries 100Ah for $120 each at Mbare sector B"`);
-      setTimeout(() => {
-        appendBotMsg(`
-          <b>🤖 AI Speech-to-Text Parsed:</b><br><br>
-          📦 <b>Item:</b> 100Ah Solar Battery<br>
-          💵 <b>Price:</b> $120 USD<br>
-          📊 <b>Stock:</b> 5<br>
-          📍 <b>Location:</b> Mbare Musika, Sector B<br>
-          <div class="btn-group">
-            <button class="chat-btn primary" onclick="confirmListing()">Confirm & Publish Listing</button>
-          </div>
-        `);
-      }, 1000);
-    }
-
-    function confirmListing() {
-      appendUserMsg("Confirm & Publish Listing");
-      setTimeout(() => {
-        appendBotMsg("🎉 <b>Listing Published!</b> Your stock is now searchable by buyers near Mbare Musika.");
-      }, 500);
-    }
-
-    function triggerEcoCashPrompt() {
-      appendUserMsg("Boost to Top Search Placement");
-      setTimeout(() => {
-        appendBotMsg(`
-          <b>EcoCash Payment Boost</b><br><br>
-          Cost: $2.00 USD/month via EcoCash.<br>
-          Enter your EcoCash phone number:
-          <div class="btn-group" style="margin-top: 6px;">
-            <button class="chat-btn primary" onclick="processEcoCash('0771234567')">Pay with 0771234567</button>
-          </div>
-        `);
-      }, 500);
-    }
-
-    function processEcoCash(phone) {
-      appendUserMsg(phone);
-      setTimeout(() => {
-        appendBotMsg(`
-          📲 <b>EcoCash Prompt Sent!</b><br><br>
-          Please check your phone screen & enter PIN to confirm.<br><br>
-          ⭐ <b>Status:</b> Subscription Active (Top Ranked)
-        `);
-      }, 1000);
-    }
-
-    async function sendMessage() {
-      const input = document.getElementById('userInput');
-      const text = input.value.trim();
-      if (!text) return;
-
-      appendUserMsg(text);
-      input.value = '';
+      // Extract price from string if present
+      const priceMatch = userText.match(/\$(\d+)/) || userText.match(/(\d+)\s*(usd|dollars)/i);
+      const price = priceMatch ? priceMatch[1] : '100';
 
       try {
-        const response = await fetch('/api/search', {
+        const res = await fetch('/api/add-product', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: text })
+          body: JSON.stringify({
+            name: userText.split('for')[0].trim(),
+            price: price,
+            location: 'Harare CBD',
+            stock: 'In Stock',
+            category: userText.toLowerCase()
+          })
         });
-        const data = await response.json();
-        appendBotMsg(data.reply.replace(/\n/g, '<br>'));
+
+        const data = await res.json();
+        if (data.success) {
+          appendBotMsg(`🤖 *AI Parsed & Added to Live Database:*\n\n📦 *Listing:* ${data.product.name}\n💵 *Price:* $${data.product.price.toFixed(2)} USD\n📍 *Location:* ${data.product.location}\n\n✅ ${data.message}`);
+        }
       } catch (err) {
-        appendBotMsg("Error fetching results from server.");
+        appendBotMsg("❌ Failed to register merchant listing.");
       }
     }
   </script>
